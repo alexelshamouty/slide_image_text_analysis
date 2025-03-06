@@ -86,13 +86,13 @@ class PresentationClient:
 
 if __name__ == '__main__':
     client = PresentationClient('localhost', 50051)
-    client.process_presentation('/path/to/presentation', 'user123')
-    status, result = client.get_task_status()
+    #client.process_presentation('/path/to/presentation', 'user123')
+    #status, result = client.get_task_status()
     results = client.get_all_user_tasks('user123')
-    logger.info("Task completed", extra={
-        'status': status,
-        'result': result
-    })
+    #logger.info("Task completed", extra={
+    #    'status': status,
+    #    'result': result
+    #})
     logger.info("All user tasks retrieved", extra={
         'tasks': results
     })

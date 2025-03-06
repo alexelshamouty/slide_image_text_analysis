@@ -42,7 +42,7 @@ app.conf.beat_schedule = {
 }
 
 # Configure logging
-logger = None
+logger = setup_logger('analyzer.tasks')
 
 @app.on_after_configure.connect
 # Configure logging

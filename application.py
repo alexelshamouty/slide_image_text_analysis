@@ -69,7 +69,7 @@ class PresentationServicer(process_presentation_pb2_grpc.ProcessPresentationServ
                 'user_id': request.user_id,
                 'tasks': result
             })
-            return process_presentation_pb2.GetAllUserTasksResponse(
+            return process_presentation_pb2.AllUserTasksResponse(
                 tasks=result
             )
         except Exception as e:
