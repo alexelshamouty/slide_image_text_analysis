@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from proto import process_presentation_pb2 as proto_dot_process__presentation__pb2
+from interfaces import process_presentation_pb2 as interfaces_dot_process__presentation__pb2
 
 GRPC_GENERATED_VERSION = '1.70.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in proto/process_presentation_pb2_grpc.py depends on'
+        + f' but the generated code in interfaces/process_presentation_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -37,13 +37,13 @@ class ProcessPresentationServiceStub(object):
         """
         self.ProcessPresentation = channel.unary_unary(
                 '/presentation.ProcessPresentationService/ProcessPresentation',
-                request_serializer=proto_dot_process__presentation__pb2.ProcessPresentationRequest.SerializeToString,
-                response_deserializer=proto_dot_process__presentation__pb2.ProcessPresentationResponse.FromString,
+                request_serializer=interfaces_dot_process__presentation__pb2.ProcessPresentationRequest.SerializeToString,
+                response_deserializer=interfaces_dot_process__presentation__pb2.ProcessPresentationResponse.FromString,
                 _registered_method=True)
         self.GetTaskStatus = channel.unary_unary(
                 '/presentation.ProcessPresentationService/GetTaskStatus',
-                request_serializer=proto_dot_process__presentation__pb2.TaskStatusRequest.SerializeToString,
-                response_deserializer=proto_dot_process__presentation__pb2.TaskStatusResponse.FromString,
+                request_serializer=interfaces_dot_process__presentation__pb2.TaskStatusRequest.SerializeToString,
+                response_deserializer=interfaces_dot_process__presentation__pb2.TaskStatusResponse.FromString,
                 _registered_method=True)
 
 
@@ -70,13 +70,13 @@ def add_ProcessPresentationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'ProcessPresentation': grpc.unary_unary_rpc_method_handler(
                     servicer.ProcessPresentation,
-                    request_deserializer=proto_dot_process__presentation__pb2.ProcessPresentationRequest.FromString,
-                    response_serializer=proto_dot_process__presentation__pb2.ProcessPresentationResponse.SerializeToString,
+                    request_deserializer=interfaces_dot_process__presentation__pb2.ProcessPresentationRequest.FromString,
+                    response_serializer=interfaces_dot_process__presentation__pb2.ProcessPresentationResponse.SerializeToString,
             ),
             'GetTaskStatus': grpc.unary_unary_rpc_method_handler(
                     servicer.GetTaskStatus,
-                    request_deserializer=proto_dot_process__presentation__pb2.TaskStatusRequest.FromString,
-                    response_serializer=proto_dot_process__presentation__pb2.TaskStatusResponse.SerializeToString,
+                    request_deserializer=interfaces_dot_process__presentation__pb2.TaskStatusRequest.FromString,
+                    response_serializer=interfaces_dot_process__presentation__pb2.TaskStatusResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -105,8 +105,8 @@ class ProcessPresentationService(object):
             request,
             target,
             '/presentation.ProcessPresentationService/ProcessPresentation',
-            proto_dot_process__presentation__pb2.ProcessPresentationRequest.SerializeToString,
-            proto_dot_process__presentation__pb2.ProcessPresentationResponse.FromString,
+            interfaces_dot_process__presentation__pb2.ProcessPresentationRequest.SerializeToString,
+            interfaces_dot_process__presentation__pb2.ProcessPresentationResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -132,8 +132,8 @@ class ProcessPresentationService(object):
             request,
             target,
             '/presentation.ProcessPresentationService/GetTaskStatus',
-            proto_dot_process__presentation__pb2.TaskStatusRequest.SerializeToString,
-            proto_dot_process__presentation__pb2.TaskStatusResponse.FromString,
+            interfaces_dot_process__presentation__pb2.TaskStatusRequest.SerializeToString,
+            interfaces_dot_process__presentation__pb2.TaskStatusResponse.FromString,
             options,
             channel_credentials,
             insecure,
