@@ -14,6 +14,9 @@ RUN mkdir -p /app/tmp
 FROM base AS application
 COPY load_and_generate.py .
 COPY tasks.py .
+COPY application.py .
+COPY proto .
+COPY interfaces .
 
 CMD ["/bin/bash", "-c", "sleep infinity"]
 

@@ -2,20 +2,33 @@ syntax = "proto3";
 
 package presentation;
 
-// Service definition
-service PresentationProcessor {
-  // Process a presentation file
-  rpc ProcessPresentation (ProcessRequest) returns (ProcessResponse);
+// The service definition
+service ProcessPresentationService {
+  // Starts the processing chain
+  rpc ProcessPresentation (ProcessPresentationRequest) returns (ProcessPresentationResponse);
+
+  // Fetch the task status
+  rpc GetTaskStatus (TaskStatusRequest) returns (TaskStatusResponse);
 }
 
-// Request message containing filepath and user ID
-message ProcessRequest {
+// The request message for starting a task
+message ProcessPresentationRequest {
   string filepath = 1;
   string user_id = 2;
 }
 
-// Response message containing task ID and status
-message ProcessResponse {
+// The response message for starting a task
+message ProcessPresentationResponse {
   string task_id = 1;
-  string status = 2;
+}
+
+// The request message for fetching task status
+message TaskStatusRequest {
+  string task_id = 1;
+}
+
+// The response message for fetching task status
+message TaskStatusResponse {
+  string status = 1;
+  string result = 2;
 }

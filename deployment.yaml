@@ -87,6 +87,9 @@ spec:
       - name: application
         imagePullPolicy: Never
         image: application:latest
+        ports:
+        - containerPort: 8000
+        - containerPort: 50051  # gRPC port
         resources:
           limits:
             memory: "256Mi"
@@ -102,6 +105,18 @@ spec:
   ports:
   - port: 8000
     targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: application-grpc
+spec:
+  selector:
+    app: analyzer-application
+  ports:
+  - port: 50051
+    targetPort: 50051
+    name: grpc
 ---
 apiVersion: apps/v1
 kind: Deployment

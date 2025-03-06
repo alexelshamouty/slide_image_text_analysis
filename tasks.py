@@ -2,6 +2,7 @@ import os
 from celery import Celery, chain
 from celery.schedules import crontab
 from celery.utils.log import get_task_logger
+from celery.result import AsyncResult
 import logging
 from PIL import Image
 from load_and_generate import (
@@ -11,6 +12,10 @@ from load_and_generate import (
     process_text_with_images,
 )
 from typing import List, Dict
+import grpc
+from interfaces import process_presentation_pb2_grpc, process_presentation_pb2
+
+from concurrent import futures
 
 # Configure Celery
 app = Celery('tasks', 
@@ -94,10 +99,6 @@ def save_analysis_task(self, analysis_dict: Dict):
 def process_presentation(filepath: str, user_id: str):
     """
     Chain of tasks to process a presentation
-    
-    Usage:
-        from tasks import process_presentation
-        result = process_presentation('/path/to/presentation.pptx', 'user123')
     """
     return chain(
         extract_content_task.s(filepath, user_id),
@@ -105,4 +106,3 @@ def process_presentation(filepath: str, user_id: str):
         analyze_content_task.s(),
         save_analysis_task.s()
     ).apply_async()
-

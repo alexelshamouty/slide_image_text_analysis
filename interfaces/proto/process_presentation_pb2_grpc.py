@@ -25,8 +25,8 @@ if _version_not_supported:
     )
 
 
-class PresentationProcessorStub(object):
-    """Service definition
+class ProcessPresentationServiceStub(object):
+    """The service definition
     """
 
     def __init__(self, channel):
@@ -36,41 +36,58 @@ class PresentationProcessorStub(object):
             channel: A grpc.Channel.
         """
         self.ProcessPresentation = channel.unary_unary(
-                '/presentation.PresentationProcessor/ProcessPresentation',
-                request_serializer=proto_dot_process__presentation__pb2.ProcessRequest.SerializeToString,
-                response_deserializer=proto_dot_process__presentation__pb2.ProcessResponse.FromString,
+                '/presentation.ProcessPresentationService/ProcessPresentation',
+                request_serializer=proto_dot_process__presentation__pb2.ProcessPresentationRequest.SerializeToString,
+                response_deserializer=proto_dot_process__presentation__pb2.ProcessPresentationResponse.FromString,
+                _registered_method=True)
+        self.GetTaskStatus = channel.unary_unary(
+                '/presentation.ProcessPresentationService/GetTaskStatus',
+                request_serializer=proto_dot_process__presentation__pb2.TaskStatusRequest.SerializeToString,
+                response_deserializer=proto_dot_process__presentation__pb2.TaskStatusResponse.FromString,
                 _registered_method=True)
 
 
-class PresentationProcessorServicer(object):
-    """Service definition
+class ProcessPresentationServiceServicer(object):
+    """The service definition
     """
 
     def ProcessPresentation(self, request, context):
-        """Process a presentation file
+        """Starts the processing chain
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetTaskStatus(self, request, context):
+        """Fetch the task status
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_PresentationProcessorServicer_to_server(servicer, server):
+def add_ProcessPresentationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'ProcessPresentation': grpc.unary_unary_rpc_method_handler(
                     servicer.ProcessPresentation,
-                    request_deserializer=proto_dot_process__presentation__pb2.ProcessRequest.FromString,
-                    response_serializer=proto_dot_process__presentation__pb2.ProcessResponse.SerializeToString,
+                    request_deserializer=proto_dot_process__presentation__pb2.ProcessPresentationRequest.FromString,
+                    response_serializer=proto_dot_process__presentation__pb2.ProcessPresentationResponse.SerializeToString,
+            ),
+            'GetTaskStatus': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetTaskStatus,
+                    request_deserializer=proto_dot_process__presentation__pb2.TaskStatusRequest.FromString,
+                    response_serializer=proto_dot_process__presentation__pb2.TaskStatusResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'presentation.PresentationProcessor', rpc_method_handlers)
+            'presentation.ProcessPresentationService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('presentation.PresentationProcessor', rpc_method_handlers)
+    server.add_registered_method_handlers('presentation.ProcessPresentationService', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class PresentationProcessor(object):
-    """Service definition
+class ProcessPresentationService(object):
+    """The service definition
     """
 
     @staticmethod
@@ -87,9 +104,36 @@ class PresentationProcessor(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/presentation.PresentationProcessor/ProcessPresentation',
-            proto_dot_process__presentation__pb2.ProcessRequest.SerializeToString,
-            proto_dot_process__presentation__pb2.ProcessResponse.FromString,
+            '/presentation.ProcessPresentationService/ProcessPresentation',
+            proto_dot_process__presentation__pb2.ProcessPresentationRequest.SerializeToString,
+            proto_dot_process__presentation__pb2.ProcessPresentationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetTaskStatus(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/presentation.ProcessPresentationService/GetTaskStatus',
+            proto_dot_process__presentation__pb2.TaskStatusRequest.SerializeToString,
+            proto_dot_process__presentation__pb2.TaskStatusResponse.FromString,
             options,
             channel_credentials,
             insecure,
