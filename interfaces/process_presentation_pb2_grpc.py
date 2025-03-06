@@ -45,6 +45,11 @@ class ProcessPresentationServiceStub(object):
                 request_serializer=interfaces_dot_process__presentation__pb2.TaskStatusRequest.SerializeToString,
                 response_deserializer=interfaces_dot_process__presentation__pb2.TaskStatusResponse.FromString,
                 _registered_method=True)
+        self.GetAllUserTasks = channel.unary_unary(
+                '/presentation.ProcessPresentationService/GetAllUserTasks',
+                request_serializer=interfaces_dot_process__presentation__pb2.AllUserTasksRequest.SerializeToString,
+                response_deserializer=interfaces_dot_process__presentation__pb2.AllUserTasksResponse.FromString,
+                _registered_method=True)
 
 
 class ProcessPresentationServiceServicer(object):
@@ -65,6 +70,13 @@ class ProcessPresentationServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetAllUserTasks(self, request, context):
+        """Get all users tasks
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ProcessPresentationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -77,6 +89,11 @@ def add_ProcessPresentationServiceServicer_to_server(servicer, server):
                     servicer.GetTaskStatus,
                     request_deserializer=interfaces_dot_process__presentation__pb2.TaskStatusRequest.FromString,
                     response_serializer=interfaces_dot_process__presentation__pb2.TaskStatusResponse.SerializeToString,
+            ),
+            'GetAllUserTasks': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetAllUserTasks,
+                    request_deserializer=interfaces_dot_process__presentation__pb2.AllUserTasksRequest.FromString,
+                    response_serializer=interfaces_dot_process__presentation__pb2.AllUserTasksResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -134,6 +151,33 @@ class ProcessPresentationService(object):
             '/presentation.ProcessPresentationService/GetTaskStatus',
             interfaces_dot_process__presentation__pb2.TaskStatusRequest.SerializeToString,
             interfaces_dot_process__presentation__pb2.TaskStatusResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetAllUserTasks(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/presentation.ProcessPresentationService/GetAllUserTasks',
+            interfaces_dot_process__presentation__pb2.AllUserTasksRequest.SerializeToString,
+            interfaces_dot_process__presentation__pb2.AllUserTasksResponse.FromString,
             options,
             channel_credentials,
             insecure,

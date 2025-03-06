@@ -2,7 +2,10 @@ import os
 from celery import Celery, chain
 from celery.schedules import crontab
 from celery.utils.log import get_task_logger
+from celery.result import AsyncResult
+from celery.schedules import crontab
 import logging
+import redis
 from PIL import Image
 from load_and_generate import (
     extract_content_from_slides,
@@ -20,6 +23,8 @@ app = Celery('tasks',
              broker='redis://broker:6379/0',
              backend='redis://backend:6379/0')
 
+result_backend='redis://results:6379/0'
+
 app.conf.update(
     worker_concurrency=10,
     result_expires=3600,
@@ -29,6 +34,13 @@ app.conf.update(
     timezone='UTC'
 )
 
+app.conf.beat_schedule = {
+    'update_tasks': {
+        'task': 'tasks.update_tasks',
+        'schedule': crontab(minute='*/1'),
+    },
+}
+
 # Configure logging
 logger = None
 
@@ -37,6 +49,10 @@ logger = None
 def iniaite_logging(sender, **kwargs):
     global logger 
     logger = setup_logger('analyzer.tasks')
+
+@app.on_after_configure.connect
+def setup_redis_client(sender, **kwargs):
+    app.results_redis = redis.Redis(host='redis', port=6379, db=0)
 
 @app.task(bind=True, max_retries=3, name='tasks.extract_content')
 def extract_content_task(self, filepath: str, user_id: str):
@@ -100,13 +116,39 @@ def save_analysis_task(self, analysis_dict: Dict):
         logger.error(f"Error saving analysis: {exc}")
         raise self.retry(exc=exc, countdown=60)
 
+@app.task(bind=True, name='tasks.update_tasks')
+def update_tasks(self):
+    """Update the status of tasks in the results database"""
+    try:
+        # Get all task IDs from the results database
+        user_ids = app.results_redis.keys('*')
+        task_results = {key: app.results_redis.smembers(key) for key in user_ids}
+        for user_id, task_ids in task_results.items():
+            logger(f"Updating tasks for {user_id}")
+            for task_id in task_ids:
+                task_id = task_id.decode('utf-8')
+                task = AsyncResult(task_id)
+                if task.state == 'SUCCESS':
+                    # Remove the task ID from the results database
+                    app.results_redis.srem(user_id, task_id)
+        logger.info("User tasks database updated successfully")
+    except Exception as exc:
+        logger.error(f"Error updating tasks: {exc}")
+
 def process_presentation(filepath: str, user_id: str):
     """
     Chain of tasks to process a presentation
     """
-    return chain(
+    result: AsyncResult = chain(
         extract_content_task.s(filepath, user_id),
         process_images_task.s(),
         analyze_content_task.s(),
         save_analysis_task.s()
     ).apply_async()
+
+    try:
+        app.results_redis.sadd(user_id, result.id)
+    except Exception as exc:
+        logger.error(f"Couldn't add the user id to results database: {str(exc)}")
+    
+    return result

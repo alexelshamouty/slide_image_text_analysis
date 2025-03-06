@@ -9,6 +9,9 @@ service ProcessPresentationService {
 
   // Fetch the task status
   rpc GetTaskStatus (TaskStatusRequest) returns (TaskStatusResponse);
+
+  // Get all users tasks
+  rpc GetAllUserTasks (AllUserTasksRequest) returns (AllUserTasksResponse);
 }
 
 // The request message for starting a task
@@ -31,4 +34,14 @@ message TaskStatusRequest {
 message TaskStatusResponse {
   string status = 1;
   string result = 2;
+}
+
+// The request message for GetAllUserTasks
+message AllUserTasksRequest {
+  string user_id = 1;
+}
+
+// The response for GetAllUserTasks
+message AllUserTasksResponse {
+  repeated string tasks = 1;
 }

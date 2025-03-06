@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%interfaces/process_presentation.proto\x12\x0cpresentation\"?\n\x1aProcessPresentationRequest\x12\x10\n\x08\x66ilepath\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\".\n\x1bProcessPresentationResponse\x12\x0f\n\x07task_id\x18\x01 \x01(\t\"$\n\x11TaskStatusRequest\x12\x0f\n\x07task_id\x18\x01 \x01(\t\"4\n\x12TaskStatusResponse\x12\x0e\n\x06status\x18\x01 \x01(\t\x12\x0e\n\x06result\x18\x02 \x01(\t2\xdc\x01\n\x1aProcessPresentationService\x12j\n\x13ProcessPresentation\x12(.presentation.ProcessPresentationRequest\x1a).presentation.ProcessPresentationResponse\x12R\n\rGetTaskStatus\x12\x1f.presentation.TaskStatusRequest\x1a .presentation.TaskStatusResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%interfaces/process_presentation.proto\x12\x0cpresentation\"?\n\x1aProcessPresentationRequest\x12\x10\n\x08\x66ilepath\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\".\n\x1bProcessPresentationResponse\x12\x0f\n\x07task_id\x18\x01 \x01(\t\"$\n\x11TaskStatusRequest\x12\x0f\n\x07task_id\x18\x01 \x01(\t\"4\n\x12TaskStatusResponse\x12\x0e\n\x06status\x18\x01 \x01(\t\x12\x0e\n\x06result\x18\x02 \x01(\t\"&\n\x13\x41llUserTasksRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\"%\n\x14\x41llUserTasksResponse\x12\r\n\x05tasks\x18\x01 \x03(\t2\xb6\x02\n\x1aProcessPresentationService\x12j\n\x13ProcessPresentation\x12(.presentation.ProcessPresentationRequest\x1a).presentation.ProcessPresentationResponse\x12R\n\rGetTaskStatus\x12\x1f.presentation.TaskStatusRequest\x1a .presentation.TaskStatusResponse\x12X\n\x0fGetAllUserTasks\x12!.presentation.AllUserTasksRequest\x1a\".presentation.AllUserTasksResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -39,6 +39,10 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_TASKSTATUSREQUEST']._serialized_end=204
   _globals['_TASKSTATUSRESPONSE']._serialized_start=206
   _globals['_TASKSTATUSRESPONSE']._serialized_end=258
-  _globals['_PROCESSPRESENTATIONSERVICE']._serialized_start=261
-  _globals['_PROCESSPRESENTATIONSERVICE']._serialized_end=481
+  _globals['_ALLUSERTASKSREQUEST']._serialized_start=260
+  _globals['_ALLUSERTASKSREQUEST']._serialized_end=298
+  _globals['_ALLUSERTASKSRESPONSE']._serialized_start=300
+  _globals['_ALLUSERTASKSRESPONSE']._serialized_end=337
+  _globals['_PROCESSPRESENTATIONSERVICE']._serialized_start=340
+  _globals['_PROCESSPRESENTATIONSERVICE']._serialized_end=650
 # @@protoc_insertion_point(module_scope)
