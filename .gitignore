@@ -1,0 +1,39 @@
+# Virtual Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# IDE settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Application specific
+*.pptx
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pdf
+*.txt
+!requirements.txt
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
