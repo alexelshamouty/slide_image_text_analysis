@@ -14,8 +14,8 @@ from typing import List, Dict
 
 # Configure Celery
 app = Celery('tasks', 
-             broker='redis://localhost:6379/0',
-             backend='redis://localhost:6379/0')
+             broker='redis://broker:6379/0',
+             backend='redis://backend:6379/0')
 app.conf.update(
     worker_concurrency=10,
     result_expires=3600,

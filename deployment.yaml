@@ -1,0 +1,127 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-broker
+spec:
+  selector:
+    matchLabels:
+      app: redis-broker
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis-broker
+    spec:
+      containers:
+      - name: redis
+        image: redis:alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: broker
+spec:
+  selector:
+    app: redis-broker
+  ports:
+  - port: 6379
+    targetPort: 6379
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-backend
+spec:
+  selector:
+    matchLabels:
+      app: redis-backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis-backend
+    spec:
+      containers:
+      - name: redis
+        image: redis:alpine
+        ports:
+        - containerPort: 6379  
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  selector:
+    app: redis-backend
+  ports:
+  - port: 6388          
+    targetPort: 6379    
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analyzer-application
+spec:
+  selector:
+    matchLabels:
+      app: analyzer-application
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: analyzer-application
+    spec:
+      containers:
+      - name: application
+        imagePullPolicy: Never
+        image: application:latest
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: application
+spec:
+  selector:
+    app: analyzer-application
+  ports:
+  - port: 8000
+    targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analyzer-worker
+spec:
+  selector:
+    matchLabels:
+      app: analyzer-worker
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: analyzer-worker
+    spec:
+      containers:
+      - name: worker
+        image: worker:latest
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "200m"

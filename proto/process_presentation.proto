@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package presentation;
+
+// Service definition
+service PresentationProcessor {
+  // Process a presentation file
+  rpc ProcessPresentation (ProcessRequest) returns (ProcessResponse);
+}
+
+// Request message containing filepath and user ID
+message ProcessRequest {
+  string filepath = 1;
+  string user_id = 2;
+}
+
+// Response message containing task ID and status
+message ProcessResponse {
+  string task_id = 1;
+  string status = 2;
+}
