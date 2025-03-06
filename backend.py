@@ -1,5 +1,5 @@
 import grpc
-from interfaces.process_presentation_pb2 import ProcessPresentationRequest, TaskStatusRequest
+from interfaces.process_presentation_pb2 import ProcessPresentationRequest, TaskStatusRequest, AllUserTasksRequest
 from interfaces.process_presentation_pb2_grpc import ProcessPresentationServiceStub
 import logging
 
@@ -63,12 +63,36 @@ class PresentationClient:
                 'code': e.code()
             })
             raise
+    def get_all_user_tasks(self, user_id: str):
+        logger.info("Initiating request to retrieve all user tasks", extra={
+            'user_id': user_id
+        })
+        try:
+            request = AllUserTasksRequest(user_id=user_id)
+            task_response = self.stub.GetAllUserTasks(request)
+            results = task_response.tasks
+            logger.info("Successfully retrieved all user tasks", extra={
+                'user_id': user_id,
+                'tasks': results
+            })
+            return results
+        # Assuming the response contains a list of tasks
+        except grpc.RpcError as e:
+            logger.error("Failed to retrieve all user tasks", extra={
+                'error': str(e),
+                'code': e.code()
+            })
+            raise
 
 if __name__ == '__main__':
     client = PresentationClient('localhost', 50051)
     client.process_presentation('/path/to/presentation', 'user123')
     status, result = client.get_task_status()
+    results = client.get_all_user_tasks('user123')
     logger.info("Task completed", extra={
         'status': status,
         'result': result
+    })
+    logger.info("All user tasks retrieved", extra={
+        'tasks': results
     })

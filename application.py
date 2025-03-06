@@ -2,7 +2,7 @@ import grpc
 from concurrent import futures
 from celery.result import AsyncResult
 from interfaces import process_presentation_pb2_grpc, process_presentation_pb2
-from tasks import process_presentation
+from tasks import process_presentation,get_all_user_tasks
 import logging
 import json
 from log_config import setup_logger
@@ -57,6 +57,28 @@ class PresentationServicer(process_presentation_pb2_grpc.ProcessPresentationServ
             })
             context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details('Failed to retrieve task status')
+            raise
+    def GetAllUserTasks(self, request, context):
+        logger.info('Retrieving all tasks for user', extra={
+            'user_id': request.user_id,
+        })
+
+        try:
+            result = get_all_user_tasks(request.user_id)
+            logger.info('Successfully retrieved all user tasks', extra={
+                'user_id': request.user_id,
+                'tasks': result
+            })
+            return process_presentation_pb2.GetAllUserTasksResponse(
+                tasks=result
+            )
+        except Exception as e:
+            logger.error('Failed to all user tasks tasks', extra={
+                'error': str(e),
+                'user_id': request.user_id
+            })
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details('Failed to retrieve tasks')
             raise
 
 def serve():

@@ -152,3 +152,17 @@ def process_presentation(filepath: str, user_id: str):
         logger.error(f"Couldn't add the user id to results database: {str(exc)}")
     
     return result
+
+def get_all_user_tasks(user_id: str):
+    """
+    Get all tasks for a user
+    """
+    try:
+        task_ids = app.results_redis.smembers(user_id)
+        tasks = [task_id for task_id in task_ids]
+        task_results = [str(AsyncResult(task_id).result) for task_id in tasks]
+        results = [f"{task_id}: {task_result}" for task_id, task_result in zip(tasks, task_results)]
+        return results
+    except Exception as exc:
+        logger.error(f"Couldn't get tasks for user {user_id}: {str(exc)}")
+        return []
