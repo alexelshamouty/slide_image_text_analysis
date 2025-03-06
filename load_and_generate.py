@@ -1,16 +1,18 @@
+import base64
+import io
+import os
+import sys
+from typing import *
+from typing import List
+
+import ollama
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from PIL import Image
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.util import Inches
-from PIL import Image
-import io
-import base64
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-import ollama
-from typing import *
-import os
-import sys
-from typing import List
 from tqdm import tqdm
+
 
 def extract_image_from_shape(shape) -> Optional[Image.Image]:
     """
@@ -27,6 +29,7 @@ def extract_image_from_shape(shape) -> Optional[Image.Image]:
         return Image.open(io.BytesIO(image_blob))
     return None
 
+
 def extract_content_from_slides(filepath: str) -> Tuple[str, List[Image.Image]]:
     """
     Extracts both text and images from a PowerPoint file.
@@ -40,25 +43,26 @@ def extract_content_from_slides(filepath: str) -> Tuple[str, List[Image.Image]]:
     prs = Presentation(filepath)
     text = ""
     images = []
-    
+
     for slide in prs.slides:
         for shape in slide.shapes:
             if hasattr(shape, "text"):
                 text += shape.text + "\n"
-            
+
             image = extract_image_from_shape(shape)
             if image:
                 images.append(image)
-    
+
     return text, images
+
 
 def image_to_base64(image: Image.Image) -> str:
     """
     Convert a PIL Image to base64 string.
-    
+
     Args:
         image (Image.Image): PIL Image object
-        
+
     Returns:
         str: Base64 encoded string of the image
     """
@@ -66,6 +70,7 @@ def image_to_base64(image: Image.Image) -> str:
     image.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode()
     return img_str
+
 
 def process_images(images: List[Image.Image]) -> Dict[str, str]:
     """
@@ -102,22 +107,23 @@ def process_images(images: List[Image.Image]) -> Dict[str, str]:
                                     **Response Rules:**
                                     - Limit your response to a **maximum of three sentences**.
                                     - If the image does not match any of the categories above, return an **empty string**.
-                                    """
+                                    """,
                     },
                     {
                         "role": "user",
                         "content": "Describe this image:",
-                        "images": [base64_image]
-                    }
-                ]
+                        "images": [base64_image],
+                    },
+                ],
             )
             # Extract just the content from the response
-            descriptions[f"image_{idx}"] = response['message']['content']
+            descriptions[f"image_{idx}"] = response["message"]["content"]
         except Exception as e:
             print(f"Error processing image {idx}: {str(e)}")
             descriptions[f"image_{idx}"] = ""
-    
+
     return descriptions
+
 
 def split_text(text: str) -> List[str]:
     """
@@ -129,10 +135,13 @@ def split_text(text: str) -> List[str]:
     Returns:
         List[str]: List of text chunks.
     """
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, length_function=len, add_start_index=True)
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000, chunk_overlap=200, length_function=len, add_start_index=True
+    )
     return text_splitter.split_text(text=text)
 
-def process_text_with_images(chunks:List, descriptions:Mapping) -> str:
+
+def process_text_with_images(chunks: List, descriptions: Mapping) -> str:
     """
     Process text with image descriptions and return a final output.
 
@@ -144,14 +153,17 @@ def process_text_with_images(chunks:List, descriptions:Mapping) -> str:
         str: The final processed output.
     """
     all_text = "\n".join([chunk for chunk in chunks])
-    all_image_descriptions = "\n".join([description for description in descriptions.values()])
+    all_image_descriptions = "\n".join(
+        [description for description in descriptions.values()]
+    )
 
     try:
         response = ollama.chat(
             model="llama3:latest",
-            messages=[{
-                "role": "system",
-                "content": """You are a highly skilled assistant that extracts key insights from text and images.
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You are a highly skilled assistant that extracts key insights from text and images.
                             Your task is to summarize the provided text and image descriptions.
                             
                             **Guidelines:**
@@ -168,29 +180,35 @@ def process_text_with_images(chunks:List, descriptions:Mapping) -> str:
                             Make it as short as possible. Limit your self to 3 impactful sentences.
                             }
                             You will only output the Use case summary without any heading and without any extra unecessary annotations.
-                        """
-            },
-            {
-                "role": "user",
-                "content": f"""Summarize the following information:
+                        """,
+                },
+                {
+                    "role": "user",
+                    "content": f"""Summarize the following information:
 
                             **Text:** {all_text}
 
                             **Image Descriptions:** {all_image_descriptions}
-                        """
-            }]
+                        """,
+                },
+            ],
         )
 
     except Exception as e:
         print(f"Error processing text: {str(e)}")
-    return response['message']
+    return response["message"]
+
 
 def has_title(slide) -> bool:
     """Check if slide has a title shape."""
     for shape in slide.shapes:
-        if shape.has_text_frame and shape.text.strip().lower() in ["analysis summary", "analysis"]:
+        if shape.has_text_frame and shape.text.strip().lower() in [
+            "analysis summary",
+            "analysis",
+        ]:
             return True
     return False
+
 
 def find_text_box(slide) -> Optional[Any]:
     """Find existing text box in slide."""
@@ -199,7 +217,10 @@ def find_text_box(slide) -> Optional[Any]:
             return shape
     return None
 
-def append_or_create_text_box(slide, text: str, left: float, top: float, width: float, height: float):
+
+def append_or_create_text_box(
+    slide, text: str, left: float, top: float, width: float, height: float
+):
     """Append to existing text box or create new one."""
     text_box = find_text_box(slide)
     if text_box:
@@ -212,23 +233,28 @@ def append_or_create_text_box(slide, text: str, left: float, top: float, width: 
         text_box.text_frame.text = text
     return text_box
 
+
 if __name__ == "__main__":
     # Check arguments
     if len(sys.argv) < 2:
         print("Usage: python script.py <input_pptx> [output_pptx]")
         exit(1)
-    
+
     input_pptx = sys.argv[1]
-    output_pptx = sys.argv[2] if len(sys.argv) > 2 else f"{os.path.splitext(input_pptx)[0]}_with_analysis.pptx"
-    
+    output_pptx = (
+        sys.argv[2]
+        if len(sys.argv) > 2
+        else f"{os.path.splitext(input_pptx)[0]}_with_analysis.pptx"
+    )
+
     text, images = extract_content_from_slides(input_pptx)
     print(f"\nExtracted {len(images)} images")
-    
+
     # Save images and process them
-    filename = os.path.basename(input_pptx).split('.')[0]
+    filename = os.path.basename(input_pptx).split(".")[0]
     for i, img in enumerate(images):
         img.save(f"{filename}_{i}.png")
-    
+
     # Process images and print descriptions
     print("\nProcessing images...")
     descriptions = process_images(images)
@@ -239,9 +265,8 @@ if __name__ == "__main__":
     print("\nSplitting text...")
     chunks = split_text(text)
 
-    output = process_text_with_images(chunks, descriptions)['content']
+    output = process_text_with_images(chunks, descriptions)["content"]
 
     with open(f"{filename}_analysis.txt", "a+") as f:
         f.write("\n")
         f.write(output)
-
