@@ -12,10 +12,6 @@ from load_and_generate import (
     process_text_with_images,
 )
 from typing import List, Dict
-import grpc
-from interfaces import process_presentation_pb2_grpc, process_presentation_pb2
-
-from concurrent import futures
 
 # Configure Celery
 app = Celery('tasks', 

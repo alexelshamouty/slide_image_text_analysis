@@ -1,7 +1,7 @@
 import grpc
 from concurrent import futures
 from celery.result import AsyncResult
-from interfaces import process_presentation_pb2_grpc, process_presentation_pb2
+from interfaces.proto import process_presentation_pb2_grpc, process_presentation_pb2
 from tasks import process_presentation
 
 class PresentationServicer(process_presentation_pb2_grpc.ProcessPresentationServiceServicer):
