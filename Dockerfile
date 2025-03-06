@@ -14,10 +14,10 @@ FROM base AS application
 WORKDIR /app
 COPY load_and_generate.py .
 COPY tasks.py .
+COPY log_config.py .
 COPY application.py .
-COPY proto proto/
 COPY interfaces interfaces/
-CMD ["/bin/bash", "-c", "sleep infinity"]
+CMD ["python", "application.py"]
 
 ### Worker
 FROM base AS worker
@@ -25,5 +25,6 @@ WORKDIR /app
 COPY load_and_generate.py .
 COPY tasks.py .
 COPY worker.py .
+COPY log_config.py .
 
 CMD ["python", "worker.py"]

@@ -2,7 +2,6 @@ import os
 from celery import Celery, chain
 from celery.schedules import crontab
 from celery.utils.log import get_task_logger
-from celery.result import AsyncResult
 import logging
 from PIL import Image
 from load_and_generate import (
@@ -12,11 +11,15 @@ from load_and_generate import (
     process_text_with_images,
 )
 from typing import List, Dict
+from log_config import setup_logger
+
+
 
 # Configure Celery
 app = Celery('tasks', 
              broker='redis://broker:6379/0',
              backend='redis://backend:6379/0')
+
 app.conf.update(
     worker_concurrency=10,
     result_expires=3600,
@@ -27,8 +30,13 @@ app.conf.update(
 )
 
 # Configure logging
-logger = get_task_logger(__name__)
-logger.setLevel(logging.INFO)
+logger = None
+
+@app.on_after_configure.connect
+# Configure logging
+def iniaite_logging(sender, **kwargs):
+    global logger 
+    logger = setup_logger('analyzer.tasks')
 
 @app.task(bind=True, max_retries=3, name='tasks.extract_content')
 def extract_content_task(self, filepath: str, user_id: str):
