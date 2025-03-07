@@ -118,6 +118,14 @@ async def get_all_user_tasks(user_id: str):
             }
         )
     }
+
+@app.get("/get_task_status")
+async def get_task_status(task_id: str):
+    status, result = await client.get_task_status()
+    return {
+        "status": status,
+        "result": result
+    }
 @app.post("/upload_presentation")
 async def upload_presentation(user_id: str, file: UploadFile):
     logger.info("Received presentation upload", extra={

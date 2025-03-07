@@ -171,3 +171,15 @@ def get_all_user_tasks(user_id: str):
     except Exception as exc:
         logger.error(f"Couldn't get tasks for user {user_id}: {str(exc)}")
         return []
+    
+def get_task_status(task_id: str):
+    """
+    Get the status of a task
+    """
+    try:
+        task = app.AsyncResult(task_id)
+        logger.info(f"Retrieved task status for task {task_id}: {task.state}")
+        return task.state, task.result
+    except Exception as exc:
+        logger.error(f"Couldn't get task status for task {task_id}: {str(exc)}")
+        return None, None

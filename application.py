@@ -2,7 +2,7 @@ import grpc
 from concurrent import futures
 from celery.result import AsyncResult
 from interfaces import process_presentation_pb2_grpc, process_presentation_pb2
-from tasks import process_presentation,get_all_user_tasks
+from tasks import process_presentation,get_all_user_tasks,get_task_status
 from log_config import setup_logger
 from concurrent import futures
 # Configure logging
@@ -40,14 +40,14 @@ class PresentationServicer(process_presentation_pb2_grpc.ProcessPresentationServ
             'peer': context.peer()
         })
         try:
-            task_result = AsyncResult(request.task_id)
+            task_state, task_result = get_task_status(request.task_id)
             logger.debug('Task status retrieved', extra={
                 'task_id': request.task_id,
-                'status': task_result.status
+                'status': task_state
             })
             return process_presentation_pb2.TaskStatusResponse(
-                status=task_result.status,
-                result=str(task_result.result) if task_result.result else ""
+                status=task_state,
+                result=str(task_result) if task_result else ""
             )
         except Exception as e:
             logger.error('Failed to get task status', extra={
