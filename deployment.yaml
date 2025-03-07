@@ -201,8 +201,8 @@ spec:
           value: "http://host.minikube.internal:11434"
         resources:
           limits:
-            memory: "512Mi"
-            cpu: "200m"
+            memory: "1024Mi"
+            cpu: "1000m"
         volumeMounts:
         - name: analyzer-data
           mountPath: /data

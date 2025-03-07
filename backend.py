@@ -90,7 +90,7 @@ async def get_all_user_tasks(user_id: str):
     enteries = await client.get_all_user_tasks(user_id)
     logger.info(f"Retrieved all user tasks - user_id: {user_id}, tasks: {enteries}")
     return {
-        "content": json.dumps(enteries)
+        "content": enteries
         }
 
 @app.get("/get_task_status")

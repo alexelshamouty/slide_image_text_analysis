@@ -161,7 +161,17 @@ def get_all_user_tasks(user_id: str):
         task_ids = results_redis.smembers(user_id)
         logger.info(f"Retrieved task IDs for user {user_id}: {task_ids}")
         tasks = [str(task_id).strip("b'").strip("'") for task_id in task_ids]
-        task_results = [app.AsyncResult(task_id).result for task_id in tasks]
+        task_results = []
+        for task in tasks:
+            try :
+                task_result = app.AsyncResult(task).result
+                if task_result is not None:
+                    task_results.append(str(task_result))
+                else:
+                    task_results.append("Task status is not available")
+            except Exception as exc:
+                logger.error(f"Couldn't get task result for task {task}: {str(exc)}")
+                task_results.append(str(exec))
         results = {task_id:task_result for task_id, task_result in zip(tasks, task_results)}
         return results
     except Exception as exc:

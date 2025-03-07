@@ -21,21 +21,24 @@ all: build load
 
 rebuild-application:
 	kubectl delete deployment analyzer-application || true
+	sleep 60
 	minikube image rm application:latest || true
-	docker build -t application:latest -f Dockerfile.application .
-	minikube image load application:latest
-	kubectl apply -f deployment.yaml
+	docker build --target application -t application:latest  . || true
+	minikube image load application:latest || true
+	kubectl apply -f deployment.yaml || true
 
 rebuild-worker:
 	kubectl delete deployment analyzer-worker || true
+	sleep 60
 	minikube image rm worker:latest || true
-	docker build -t worker:latest -f Dockerfile.worker .
-	minikube image load worker:latest
-	kubectl apply -f deployment.yaml
+	docker build --target worker -t worker:latest  . || true
+	minikube image load worker:latest || true
+	kubectl apply -f deployment.yaml || true
 
 rebuild-backend:
 	kubectl delete deployment backend-api || true
+	sleep 60
 	minikube image rm backend:latest || true
-	docker build -t backend:latest -f Dockerfile.backend .
-	minikube image load backend:latest
-	kubectl apply -f deployment.yaml
+	docker build --target backend -t backend:latest. || true
+	minikube image load backend:latest || true
+	kubectl apply -f deployment.yaml || true
