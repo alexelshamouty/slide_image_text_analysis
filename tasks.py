@@ -50,9 +50,11 @@ logger.info("Clients setup susccessfully")
 # Configure logging
 def iniaite_logging(sender, **kwargs):
     global logger 
-    logger = setup_logger('analyzer.tasks')
-    global results_redis 
-    results_redis = redis.Redis(host='results', port=6379, db=0)
+    if not logger:
+        logger = setup_logger('analyzer.tasks')
+    global results_redis
+    if not results_redis:
+        results_redis = redis.Redis(host='results', port=6379, db=0)
     logger.info("Celery configured successfully")
 
 @app.task(bind=True, max_retries=3, name='tasks.extract_content')
