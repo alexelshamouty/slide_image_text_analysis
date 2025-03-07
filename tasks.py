@@ -43,14 +43,17 @@ app.conf.beat_schedule = {
 
 # Configure logging
 logger = setup_logger('analyzer.tasks')
+results_redis = redis.Redis(host='results', port=6379, db=0)
+logger.info("Clients setup susccessfully")
 
 @app.on_after_configure.connect
 # Configure logging
 def iniaite_logging(sender, **kwargs):
     global logger 
     logger = setup_logger('analyzer.tasks')
-    app.results_redis = redis.Redis(host='redis', port=6379, db=0)
-    logger("Celery configured successfully")
+    global results_redis 
+    results_redis = redis.Redis(host='results', port=6379, db=0)
+    logger.info("Celery configured successfully")
 
 @app.task(bind=True, max_retries=3, name='tasks.extract_content')
 def extract_content_task(self, filepath: str, user_id: str):
@@ -119,16 +122,16 @@ def update_tasks(self):
     """Update the status of tasks in the results database"""
     try:
         # Get all task IDs from the results database
-        user_ids = app.results_redis.keys('*')
-        task_results = {key: app.results_redis.smembers(key) for key in user_ids}
+        user_ids = results_redis.keys('*')
+        task_results = {key: results_redis.smembers(key) for key in user_ids}
         for user_id, task_ids in task_results.items():
-            logger(f"Updating tasks for {user_id}")
+            logger.info(f"Updating tasks for {user_id}")
             for task_id in task_ids:
                 task_id = task_id.decode('utf-8')
                 task = AsyncResult(task_id)
                 if task.state == 'SUCCESS':
                     # Remove the task ID from the results database
-                    app.results_redis.srem(user_id, task_id)
+                    results_redis.srem(user_id, task_id)
         logger.info("User tasks database updated successfully")
     except Exception as exc:
         logger.error(f"Error updating tasks: {exc}")
@@ -145,7 +148,7 @@ def process_presentation(filepath: str, user_id: str):
     ).apply_async()
 
     try:
-        app.results_redis.sadd(user_id, result.id)
+        results_redis.sadd(user_id, result.id)
     except Exception as exc:
         logger.error(f"Couldn't add the user id to results database: {str(exc)}")
     
@@ -155,9 +158,9 @@ def get_all_user_tasks(user_id: str):
     """
     Get all tasks for a user
     """
-    logger("Starting cron job to update tasks", extra={'method': 'get_all_user_tasks'})
+    logger.info("Starting cron job to update tasks", extra={'method': 'get_all_user_tasks'})
     try:
-        task_ids = app.results_redis.smembers(user_id)
+        task_ids = results_redis.smembers(user_id)
         tasks = [task_id for task_id in task_ids]
         task_results = [str(AsyncResult(task_id).result) for task_id in tasks]
         results = [f"{task_id}: {task_result}" for task_id, task_result in zip(tasks, task_results)]
