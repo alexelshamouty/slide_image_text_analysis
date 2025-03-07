@@ -9,7 +9,7 @@ load:
 	parallel minikube image load ::: application:latest worker:latest backend:latest
 
 removeimages:
-	parallel minikune image rm ::: application:latest worker:latest backend:latest
+	parallel minikube image rm ::: application:latest worker:latest backend:latest
 
 deploy:
 	kubectl apply -f deployment.yaml
