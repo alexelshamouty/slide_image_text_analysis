@@ -49,10 +49,8 @@ logger = setup_logger('analyzer.tasks')
 def iniaite_logging(sender, **kwargs):
     global logger 
     logger = setup_logger('analyzer.tasks')
-
-@app.on_after_configure.connect
-def setup_redis_client(sender, **kwargs):
     app.results_redis = redis.Redis(host='redis', port=6379, db=0)
+    logger("Celery configured successfully")
 
 @app.task(bind=True, max_retries=3, name='tasks.extract_content')
 def extract_content_task(self, filepath: str, user_id: str):
@@ -157,6 +155,7 @@ def get_all_user_tasks(user_id: str):
     """
     Get all tasks for a user
     """
+    logger("Starting cron job to update tasks", extra={'method': 'get_all_user_tasks'})
     try:
         task_ids = app.results_redis.smembers(user_id)
         tasks = [task_id for task_id in task_ids]
