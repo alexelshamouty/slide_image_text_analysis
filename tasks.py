@@ -163,8 +163,9 @@ def get_all_user_tasks(user_id: str):
     logger.info("Starting cron job to update tasks", extra={'method': 'get_all_user_tasks'})
     try:
         task_ids = results_redis.smembers(user_id)
-        tasks = [task_id for task_id in task_ids]
-        task_results = [str(app.AsyncResult(task_id).result) for task_id in tasks]
+        logger.info(f"Retrieved task IDs for user {user_id}: {task_ids}")
+        tasks = [str(task_id).strip("b'").strip("'") for task_id in task_ids]
+        task_results = [app.AsyncResult(task_id).result for task_id in tasks]
         results = [f"{task_id}: {task_result}" for task_id, task_result in zip(tasks, task_results)]
         return results
     except Exception as exc:

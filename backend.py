@@ -8,7 +8,7 @@ import aiofiles
 import asyncio
 from concurrent import futures
 import functools
-
+import json 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -110,8 +110,14 @@ logger.info("API server initialized")
 
 @app.get("/get_all_user_tasks")
 async def get_all_user_tasks(user_id: str):
-    return await client.get_all_user_tasks(user_id)
-
+    return {"content": json.dumps(
+            { 
+            str(task):None if str(status).rstrip().lstrip() == None else str(status) 
+            for entry in await client.get_all_user_tasks(user_id)
+            for task, status in [entry.split(":")]
+            }
+        )
+    }
 @app.post("/upload_presentation")
 async def upload_presentation(user_id: str, file: UploadFile):
     logger.info("Received presentation upload", extra={
