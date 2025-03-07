@@ -66,7 +66,7 @@ def extract_content_task(self, filepath: str, user_id: str):
         filename = os.path.basename(filepath).split(".")[0]
         image_paths = []
         for i, img in enumerate(images):
-            path = f"{filename}_{i}.png"
+            path = f"/data/{filename}_{i}.png"
             img.save(path)
             image_paths.append(path)
         return {'text': text, 'image_paths': image_paths, 'filepath': filepath, 'user_id': user_id}
@@ -105,7 +105,7 @@ def analyze_content_task(self, process_dict: Dict):
 def save_analysis_task(self, analysis_dict: Dict):
     """Save analysis results"""
     try:
-        filename = os.path.basename(analysis_dict['filepath']).split(".")[0]
+        filename = analysis_dict['filepath']
         output_path = f"{filename}_analysis.txt"
         with open(output_path, "a+") as f:
             f.write("\n")

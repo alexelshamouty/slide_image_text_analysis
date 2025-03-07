@@ -198,42 +198,6 @@ def process_text_with_images(chunks: List, descriptions: Mapping) -> str:
         print(f"Error processing text: {str(e)}")
     return response["message"]
 
-
-def has_title(slide) -> bool:
-    """Check if slide has a title shape."""
-    for shape in slide.shapes:
-        if shape.has_text_frame and shape.text.strip().lower() in [
-            "analysis summary",
-            "analysis",
-        ]:
-            return True
-    return False
-
-
-def find_text_box(slide) -> Optional[Any]:
-    """Find existing text box in slide."""
-    for shape in slide.shapes:
-        if shape.has_text_frame:
-            return shape
-    return None
-
-
-def append_or_create_text_box(
-    slide, text: str, left: float, top: float, width: float, height: float
-):
-    """Append to existing text box or create new one."""
-    text_box = find_text_box(slide)
-    if text_box:
-        # Append to existing text box
-        paragraph = text_box.text_frame.add_paragraph()
-        paragraph.text = text
-    else:
-        # Create new text box
-        text_box = slide.shapes.add_textbox(left, top, width, height)
-        text_box.text_frame.text = text
-    return text_box
-
-
 if __name__ == "__main__":
     # Check arguments
     if len(sys.argv) < 2:
