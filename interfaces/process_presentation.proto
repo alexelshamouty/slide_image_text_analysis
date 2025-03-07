@@ -43,5 +43,5 @@ message AllUserTasksRequest {
 
 // The response for GetAllUserTasks
 message AllUserTasksResponse {
-  repeated string tasks = 1;
+  map<string, string> tasks = 1;
 }

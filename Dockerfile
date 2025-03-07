@@ -19,6 +19,17 @@ COPY application.py .
 COPY interfaces interfaces/
 CMD ["python", "application.py"]
 
+### Backend
+FROM base AS backend
+WORKDIR /app
+COPY backend.py .
+COPY load_and_generate.py .
+COPY tasks.py .
+COPY log_config.py .
+COPY application.py .
+COPY interfaces interfaces/
+CMD ["fastapi","dev", "backend.py"]
+
 ### Worker
 FROM base AS worker
 WORKDIR /app

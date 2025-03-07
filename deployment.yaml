@@ -104,6 +104,29 @@ spec:
   - port: 6379
     targetPort: 6379
 ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: analyzer-data-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: analyzer-data-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -118,16 +141,26 @@ spec:
       labels:
         app: analyzer-application
     spec:
+      volumes:
+      - name: analyzer-data
+        persistentVolumeClaim:
+          claimName: analyzer-data-pvc
       containers:
       - name: application
         imagePullPolicy: Never
         image: application:latest
+        env:
+        - name: OLLAMA_HOST
+          value: "http://host.minikube.internal:11434"
         ports:
         - containerPort: 50051
         resources:
           limits:
             memory: "256Mi"
             cpu: "200m"
+        volumeMounts:
+        - name: analyzer-data
+          mountPath: /data
 ---
 apiVersion: v1
 kind: Service
@@ -155,11 +188,64 @@ spec:
       labels:
         app: analyzer-worker
     spec:
+      volumes:
+      - name: analyzer-data
+        persistentVolumeClaim:
+          claimName: analyzer-data-pvc
       containers:
       - name: worker
         image: worker:latest
         imagePullPolicy: Never
+        env:
+        - name: OLLAMA_HOST
+          value: "http://host.minikube.internal:11434"
         resources:
           limits:
             memory: "512Mi"
             cpu: "200m"
+        volumeMounts:
+        - name: analyzer-data
+          mountPath: /data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-api
+spec:
+  selector:
+    matchLabels:
+      app: backend-api
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend-api
+    spec:
+      volumes:
+      - name: analyzer-data
+        persistentVolumeClaim:
+          claimName: analyzer-data-pvc
+      containers:
+      - name: backend
+        image: backend:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        volumeMounts:
+        - name: analyzer-data
+          mountPath: /data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-api
+spec:
+  selector:
+    app: backend-api
+  ports:
+  - port: 80
+    targetPort: 8000

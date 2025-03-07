@@ -44,10 +44,9 @@ app.conf.beat_schedule = {
 # Configure logging
 logger = setup_logger('analyzer.tasks')
 results_redis = redis.Redis(host='results', port=6379, db=0)
-logger.info("Clients setup susccessfully")
+logger.info("Clients setup successfully")
 
 @app.on_after_configure.connect
-# Configure logging
 def iniaite_logging(sender, **kwargs):
     global logger 
     if not logger:
@@ -61,8 +60,8 @@ def iniaite_logging(sender, **kwargs):
 def extract_content_task(self, filepath: str, user_id: str):
     """Extract content from PowerPoint file"""
     try:
+        logger.info(f"Extracting content from {filepath} for user {user_id}")
         text, images = extract_content_from_slides(filepath)
-        self.request = user_id
         # Save images temporarily
         filename = os.path.basename(filepath).split(".")[0]
         image_paths = []
@@ -72,14 +71,13 @@ def extract_content_task(self, filepath: str, user_id: str):
             image_paths.append(path)
         return {'text': text, 'image_paths': image_paths, 'filepath': filepath, 'user_id': user_id}
     except Exception as exc:
-        logger.error(f"Error extracting content: {exc}")
+        logger.error(f"Error extracting content from {filepath}: {exc}")
         raise self.retry(exc=exc, countdown=60)
 
 @app.task(bind=True, max_retries=3, name='tasks.process_images')
 def process_images_task(self, content_dict: Dict):
     """Process images and generate descriptions"""
     try:
-        self.request = content_dict['user_id']
         images = [Image.open(path) for path in content_dict['image_paths']]
         descriptions = process_images(images)
         # Clean up temporary image files
@@ -88,7 +86,7 @@ def process_images_task(self, content_dict: Dict):
         return {'text': content_dict['text'], 'descriptions': descriptions, 
                 'filepath': content_dict['filepath'], 'user_id': content_dict['user_id']}
     except Exception as exc:
-        logger.error(f"Error processing images: {exc}")
+        logger.error(f"Error processing images for user {content_dict.get('user_id')}: {exc}")
         raise self.retry(exc=exc, countdown=60)
 
 @app.task(bind=True, max_retries=3, name='tasks.analyze_content')
@@ -96,12 +94,11 @@ def analyze_content_task(self, process_dict: Dict):
     """Analyze text and image descriptions"""
     try:
         chunks = split_text(process_dict['text'])
-        self.request = process_dict['user_id']
         analysis = process_text_with_images(chunks, process_dict['descriptions'])
         return {'content': analysis['content'], 'filepath': process_dict['filepath'], 
                 'user_id': process_dict['user_id']}
     except Exception as exc:
-        logger.error(f"Error analyzing content: {exc}")
+        logger.error(f"Error analyzing content for user {process_dict.get('user_id')}: {exc}")
         raise self.retry(exc=exc, countdown=60)
 
 @app.task(bind=True, max_retries=3, name='tasks.save_analysis')
@@ -109,14 +106,13 @@ def save_analysis_task(self, analysis_dict: Dict):
     """Save analysis results"""
     try:
         filename = os.path.basename(analysis_dict['filepath']).split(".")[0]
-        self.request = analysis_dict['user_id']
         output_path = f"{filename}_analysis.txt"
         with open(output_path, "a+") as f:
             f.write("\n")
             f.write(analysis_dict['content'])
         return output_path
     except Exception as exc:
-        logger.error(f"Error saving analysis: {exc}")
+        logger.error(f"Error saving analysis for user {analysis_dict.get('user_id')}: {exc}")
         raise self.retry(exc=exc, countdown=60)
 
 @app.task(bind=True, name='tasks.update_tasks')
@@ -127,7 +123,7 @@ def update_tasks(self):
         user_ids = results_redis.keys('*')
         task_results = {key: results_redis.smembers(key) for key in user_ids}
         for user_id, task_ids in task_results.items():
-            logger.info(f"Updating tasks for {user_id}")
+            logger.info(f"Updating tasks for user {user_id}")
             for task_id in task_ids:
                 task_id = task_id.decode('utf-8')
                 task = app.AsyncResult(task_id)
@@ -152,7 +148,7 @@ def process_presentation(filepath: str, user_id: str):
     try:
         results_redis.sadd(user_id, result.id)
     except Exception as exc:
-        logger.error(f"Couldn't add the user id to results database: {str(exc)}")
+        logger.error(f"Couldn't add the user id to results database for user {user_id}: {exc}")
     
     return result
 
@@ -160,17 +156,17 @@ def get_all_user_tasks(user_id: str):
     """
     Get all tasks for a user
     """
-    logger.info("Starting cron job to update tasks", extra={'method': 'get_all_user_tasks'})
+    logger.info(f"Starting cron job to update tasks - method: get_all_user_tasks")
     try:
         task_ids = results_redis.smembers(user_id)
         logger.info(f"Retrieved task IDs for user {user_id}: {task_ids}")
         tasks = [str(task_id).strip("b'").strip("'") for task_id in task_ids]
         task_results = [app.AsyncResult(task_id).result for task_id in tasks]
-        results = [f"{task_id}: {task_result}" for task_id, task_result in zip(tasks, task_results)]
+        results = {task_id:task_result for task_id, task_result in zip(tasks, task_results)}
         return results
     except Exception as exc:
-        logger.error(f"Couldn't get tasks for user {user_id}: {str(exc)}")
-        return []
+        logger.error(f"Couldn't get tasks for user {user_id}: {exc}")
+        return {}
     
 def get_task_status(task_id: str):
     """
@@ -181,5 +177,5 @@ def get_task_status(task_id: str):
         logger.info(f"Retrieved task status for task {task_id}: {task.state}")
         return task.state, task.result
     except Exception as exc:
-        logger.error(f"Couldn't get task status for task {task_id}: {str(exc)}")
+        logger.error(f"Couldn't get task status for task {task_id}: {exc}")
         return None, None
