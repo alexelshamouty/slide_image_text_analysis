@@ -39,7 +39,7 @@ def get_all_user_tasks(user_id: str):
     try:
         task_ids = results_redis.smembers(user_id)
         logger.info(f"Retrieved task IDs for user {user_id}: {task_ids}")
-        tasks = [str(task_id).strip("b'").strip("'") for task_id in task_ids]
+        tasks = [task_id.decode("utf-8") for task_id in task_ids]
         task_results = []
         for task in tasks:
             try:
