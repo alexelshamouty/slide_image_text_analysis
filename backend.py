@@ -2,6 +2,12 @@ import grpc
 from interfaces.process_presentation_pb2 import ProcessPresentationRequest, TaskStatusRequest, AllUserTasksRequest
 from interfaces.process_presentation_pb2_grpc import ProcessPresentationServiceStub
 import logging
+from typing import Union
+from fastapi import FastAPI, UploadFile, File
+import aiofiles
+import asyncio
+from concurrent import futures
+import functools
 
 # Configure logging
 logging.basicConfig(
@@ -9,6 +15,13 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+def asyncify(func):
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, func, *args, **kwargs)
+    return wrapper
 
 class PresentationClient:
     def __init__(self, host: str, port: int):
@@ -20,7 +33,8 @@ class PresentationClient:
         self.status = None
         self.result = None
         logger.info(f"Client initialized with server at {host}:{port}")
-
+    
+    @asyncify
     def process_presentation(self, filepath: str, user_id: str):
         logger.info(f"Processing presentation", extra={
             'filepath': filepath,
@@ -39,6 +53,7 @@ class PresentationClient:
             })
             raise
     
+    @asyncify
     def get_task_status(self):
         if not self.response:
             logger.error("No task has been submitted yet")
@@ -63,6 +78,7 @@ class PresentationClient:
                 'code': e.code()
             })
             raise
+    @asyncify
     def get_all_user_tasks(self, user_id: str):
         logger.info("Initiating request to retrieve all user tasks", extra={
             'user_id': user_id
@@ -84,15 +100,30 @@ class PresentationClient:
             })
             raise
 
-if __name__ == '__main__':
-    client = PresentationClient('localhost', 50051)
-    #client.process_presentation('/path/to/presentation', 'user123')
-    #status, result = client.get_task_status()
-    results = client.get_all_user_tasks('user123')
-    #logger.info("Task completed", extra={
-    #    'status': status,
-    #    'result': result
-    #})
-    logger.info("All user tasks retrieved", extra={
-        'tasks': results
+
+#Initialize the client
+client = PresentationClient('localhost', 50051)
+
+#Initialize the API server
+app = FastAPI()
+logger.info("API server initialized")
+
+@app.get("/get_all_user_tasks")
+async def get_all_user_tasks(user_id: str):
+    return await client.get_all_user_tasks(user_id)
+
+@app.post("/upload_presentation")
+async def upload_presentation(user_id: str, file: UploadFile):
+    logger.info("Received presentation upload", extra={
+        'presentation': file.filename,
+        'user_id': user_id
     })
+    async with aiofiles.open(file.filename, 'wb') as out_file:
+        while content := await file.read():
+            await out_file.write(content)
+    await client.process_presentation(file.filename, user_id)
+
+    return {
+        "filename": file.filename,
+        "processing": True
+    }

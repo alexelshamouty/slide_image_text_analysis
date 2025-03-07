@@ -3,13 +3,12 @@ from concurrent import futures
 from celery.result import AsyncResult
 from interfaces import process_presentation_pb2_grpc, process_presentation_pb2
 from tasks import process_presentation,get_all_user_tasks
-import logging
-import json
 from log_config import setup_logger
-
+from concurrent import futures
 # Configure logging
 logger = setup_logger('analyzer.application')
 
+#This is the gRPC server.
 class PresentationServicer(process_presentation_pb2_grpc.ProcessPresentationServiceServicer):
     def ProcessPresentation(self, request, context):
         logger.info('Processing presentation request', extra={

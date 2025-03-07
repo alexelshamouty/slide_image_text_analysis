@@ -23,7 +23,7 @@ app = Celery('tasks',
              broker='redis://broker:6379/0',
              backend='redis://backend:6379/0')
 
-result_backend='redis://results:6379/0'
+app.conf.result_backend = 'redis://backend:6379/0'
 
 app.conf.update(
     worker_concurrency=10,
@@ -130,7 +130,7 @@ def update_tasks(self):
             logger.info(f"Updating tasks for {user_id}")
             for task_id in task_ids:
                 task_id = task_id.decode('utf-8')
-                task = AsyncResult(task_id)
+                task = app.AsyncResult(task_id)
                 if task.state == 'SUCCESS':
                     # Remove the task ID from the results database
                     results_redis.srem(user_id, task_id)
@@ -164,7 +164,7 @@ def get_all_user_tasks(user_id: str):
     try:
         task_ids = results_redis.smembers(user_id)
         tasks = [task_id for task_id in task_ids]
-        task_results = [str(AsyncResult(task_id).result) for task_id in tasks]
+        task_results = [str(app.AsyncResult(task_id).result) for task_id in tasks]
         results = [f"{task_id}: {task_result}" for task_id, task_result in zip(tasks, task_results)]
         return results
     except Exception as exc:
