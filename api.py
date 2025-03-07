@@ -43,9 +43,12 @@ def get_all_user_tasks(user_id: str):
         task_results = []
         for task in tasks:
             try:
-                task_result = app.AsyncResult(task).result
+                response = app.AsyncResult(task)
+                task_result = response.result
                 if task_result is not None:
                     task_results.append(str(task_result))
+                elif response.state == 'PENDING':
+                        task_results.append(response.state)
                 else:
                     task_results.append("Task status is not available")
             except Exception as exc:
