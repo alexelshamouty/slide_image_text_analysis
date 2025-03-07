@@ -15,7 +15,7 @@ from load_and_generate import (
 )
 from typing import List, Dict
 from log_config import setup_logger
-
+from datetime import datetime
 
 
 # Configure Celery
@@ -37,6 +37,10 @@ app.conf.update(
 app.conf.beat_schedule = {
     'update_tasks': {
         'task': 'tasks.update_tasks',
+        'schedule': crontab(hour=0, minute=0, day_of_week = '*'),
+    },
+    'crawler': {
+        'task': 'tasks.crawl',
         'schedule': crontab(minute='*/1'),
     },
 }
@@ -133,3 +137,8 @@ def update_tasks(self):
         logger.info("User tasks database updated successfully")
     except Exception as exc:
         logger.error(f"Error updating tasks: {exc}")
+
+@app.task(bind=True, name='tasks.crawl')
+def crawl(self):
+    """ This is just a dummy task """
+    logger.info(f"Crawling -- ${datetime.utcnow()}")
