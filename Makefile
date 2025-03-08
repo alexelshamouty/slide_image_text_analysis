@@ -1,15 +1,15 @@
-.PHONY: removeimages build deploy remove load all rebuild-application rebuild-worker rebuild-backend
+.PHONY: removeimages build deploy remove load all rebuild-backend rebuild-worker rebuild-webapi
 
 build:
-	docker build --target application -t application:latest .
-	docker build --target worker -t worker:latest .
 	docker build --target backend -t backend:latest .
+	docker build --target worker -t worker:latest .
+	docker build --target api -t api:latest .
 
 load:
-	parallel minikube image load ::: application:latest worker:latest backend:latest
+	parallel minikube image load ::: backend:latest worker:latest api:latest
 
 removeimages:
-	parallel minikube image rm ::: application:latest worker:latest backend:latest
+	parallel minikube image rm ::: backend:latest worker:latest api:latest
 
 deploy:
 	kubectl apply -f deployment.yaml
@@ -19,12 +19,12 @@ remove:
 	
 all: build load
 
-rebuild-application:
-	kubectl delete deployment analyzer-application || true
+rebuild-backend:
+	kubectl delete deployment analyzer-backend || true
 	sleep 60
-	minikube image rm application:latest || true
-	docker build --target application -t application:latest  . || true
-	minikube image load application:latest || true
+	minikube image rm backend:latest || true
+	docker build --target backend -t backend:latest  . || true
+	minikube image load backend:latest || true
 	kubectl apply -f deployment.yaml || true
 
 rebuild-worker:
@@ -35,10 +35,10 @@ rebuild-worker:
 	minikube image load worker:latest || true
 	kubectl apply -f deployment.yaml || true
 
-rebuild-backend:
-	kubectl delete deployment backend-api || true
+rebuild-webapi:
+	kubectl delete deployment web-api || true
 	sleep 60
-	minikube image rm backend:latest || true
-	docker build --target backend -t backend:latest. || true
-	minikube image load backend:latest || true
+	minikube image rm api:latest || true
+	docker build --target api -t api:latest. || true
+	minikube image load api:latest || true
 	kubectl apply -f deployment.yaml || true

@@ -10,9 +10,9 @@ from celery.schedules import crontab
 from celery.utils.log import get_task_logger
 from PIL import Image
 
-from load_and_generate import (extract_content_from_slides, process_images,
+from utils.load_and_generate import (extract_content_from_slides, process_images,
                                process_text_with_images, split_text)
-from log_config import setup_logger
+from utils.log_config import setup_logger
 
 # Configure Celery
 app = Celery('tasks', 

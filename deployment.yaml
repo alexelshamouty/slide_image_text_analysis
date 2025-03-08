@@ -130,16 +130,16 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: analyzer-application
+  name: analyzer-backend
 spec:
   selector:
     matchLabels:
-      app: analyzer-application
+      app: analyzer-backend
   replicas: 1
   template:
     metadata:
       labels:
-        app: analyzer-application
+        app: analyzer-backend
     spec:
       volumes:
       - name: analyzer-data
@@ -148,7 +148,7 @@ spec:
       containers:
       - name: application
         imagePullPolicy: Never
-        image: application:latest
+        image: backend:latest
         env:
         - name: OLLAMA_HOST
           value: "http://host.minikube.internal:11434"
@@ -168,7 +168,7 @@ metadata:
   name: application-grpc
 spec:
   selector:
-    app: analyzer-application
+    app: analyzer-backend
   ports:
   - port: 50051
     targetPort: 50051
@@ -210,16 +210,16 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-api
+  name: analyzer-webapi
 spec:
   selector:
     matchLabels:
-      app: backend-api
+      app: analyzer-webapi
   replicas: 1
   template:
     metadata:
       labels:
-        app: backend-api
+        app: analyzer-webapi
     spec:
       volumes:
       - name: analyzer-data
@@ -227,7 +227,7 @@ spec:
           claimName: analyzer-data-pvc
       containers:
       - name: backend
-        image: backend:latest
+        image: api:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 8000
@@ -242,10 +242,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend-api
+  name: analyzer-webapi
 spec:
   selector:
-    app: backend-api
+    app: analyzer-webapi
   ports:
   - port: 80
     targetPort: 8000
@@ -268,7 +268,7 @@ spec:
       - name: beat
         image: worker:latest
         imagePullPolicy: Never
-        command: ["celery", "-A", "tasks.app", "beat", "--loglevel=info"]
+        command: ["celery", "-A", "backend.tasks.app", "beat", "--loglevel=info"]
         resources:
           limits:
             memory: "512Mi"
@@ -292,7 +292,7 @@ spec:
       - name: flower
         image: worker:latest
         imagePullPolicy: Never
-        command: ["celery", "-A", "tasks.app", "flower"]
+        command: ["celery", "-A", "backend.tasks.app", "flower"]
         env:
           - name: FLOWER_PORT
             value: "5555"

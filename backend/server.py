@@ -3,9 +3,9 @@ from concurrent import futures
 import grpc
 from celery.result import AsyncResult
 
-from api import get_all_user_tasks, get_task_status, process_presentation
+from backend.api import get_all_user_tasks, get_task_status, process_presentation
 from interfaces import process_presentation_pb2, process_presentation_pb2_grpc
-from log_config import setup_logger
+from utils.log_config import setup_logger
 
 # Configure logging
 logger = setup_logger('analyzer.application')

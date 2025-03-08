@@ -2,8 +2,8 @@ import redis
 from celery import chain
 from celery.result import AsyncResult
 
-from log_config import setup_logger
-from tasks import (analyze_content_task, app, extract_content_task,
+from utils.log_config import setup_logger
+from backend.tasks import (analyze_content_task, app, extract_content_task,
                    process_images_task, save_analysis_task)
 
 logger = setup_logger('analyzer.api')
