@@ -1,14 +1,10 @@
+import redis
 from celery import chain
 from celery.result import AsyncResult
-import redis
-from tasks import (
-    extract_content_task,
-    process_images_task,
-    analyze_content_task,
-    save_analysis_task,
-    app
-)
+
 from log_config import setup_logger
+from tasks import (analyze_content_task, app, extract_content_task,
+                   process_images_task, save_analysis_task)
 
 logger = setup_logger('analyzer.api')
 results_redis = redis.Redis(host='results', port=6379, db=0)

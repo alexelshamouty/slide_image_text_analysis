@@ -1,14 +1,20 @@
-import grpc
-from interfaces.process_presentation_pb2 import ProcessPresentationRequest, TaskStatusRequest, AllUserTasksRequest
-from interfaces.process_presentation_pb2_grpc import ProcessPresentationServiceStub
-import logging
-from typing import Union, List
-from fastapi import FastAPI, UploadFile, File
-import aiofiles
 import asyncio
-from concurrent import futures
 import functools
-import json 
+import json
+import logging
+from concurrent import futures
+from typing import List, Union
+
+import aiofiles
+import grpc
+from fastapi import FastAPI, File, UploadFile
+
+from interfaces.process_presentation_pb2 import (AllUserTasksRequest,
+                                                 ProcessPresentationRequest,
+                                                 TaskStatusRequest)
+from interfaces.process_presentation_pb2_grpc import \
+    ProcessPresentationServiceStub
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,

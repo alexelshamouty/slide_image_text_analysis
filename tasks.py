@@ -1,22 +1,18 @@
+import logging
 import os
+from datetime import datetime
+from typing import Dict, List
+
+import redis
 from celery import Celery, chain
-from celery.schedules import crontab
-from celery.utils.log import get_task_logger
 from celery.result import AsyncResult
 from celery.schedules import crontab
-import logging
-import redis
+from celery.utils.log import get_task_logger
 from PIL import Image
-from load_and_generate import (
-    extract_content_from_slides,
-    process_images,
-    split_text,
-    process_text_with_images,
-)
-from typing import List, Dict
-from log_config import setup_logger
-from datetime import datetime
 
+from load_and_generate import (extract_content_from_slides, process_images,
+                               process_text_with_images, split_text)
+from log_config import setup_logger
 
 # Configure Celery
 app = Celery('tasks', 
